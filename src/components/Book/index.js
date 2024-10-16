@@ -42,12 +42,12 @@ export default function Book(props) {
             style={{
               width: 128,
               height: 193,
-              backgroundImage: `url(${e.imageLinks.thumbnail})`,
+              backgroundImage: `url(${e?.imageLinks?.thumbnail})`,
             }}
           ></div>
           <div className="book-shelf-changer">{renderBookOption(e)}</div>
         </div>
-        <div className="book-title">{e.title}</div>
+        <div className="book-title">{e?.title}</div>
         <div className="book-authors">
           {e.authors ? e.authors.join(",") : "Unknown"}
         </div>
