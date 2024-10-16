@@ -18,7 +18,7 @@ export default function Book(props) {
     return (
       <select
         name="shelf"
-        value={el.shelf}
+        value={el?.shelf ?? "none"}
         onChange={(e) => {
           onChangeBookShelf(e.target.value, el);
         }}
@@ -29,7 +29,9 @@ export default function Book(props) {
         <option value="currentlyReading">Currently Reading</option>
         <option value="wantToRead">Want to Read</option>
         <option value="read">Read</option>
-        <option value="none">None</option>
+        {el.shelf && el.shelf !== "none" ? (
+          <option value="none">None</option>
+        ) : null}
       </select>
     );
   };

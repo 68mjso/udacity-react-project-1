@@ -1,8 +1,9 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AppContext from "../../AppContext";
-import { search } from "../../BooksAPI";
+import { getAll, search } from "../../BooksAPI";
 import Book from "../../components/Book";
+import { debounce } from "lodash";
 export default function Search() {
   const navigate = useNavigate();
   const goBack = () => {
@@ -11,19 +12,37 @@ export default function Search() {
   const appContext = useContext(AppContext);
   const { searchInput, setSearchInput, searchList, setSearchList } = appContext;
   useEffect(() => {
-    if (!searchInput || searchInput.trim() == "") {
-      return;
-    }
-    getData();
+    debounceInput(searchInput);
   }, [searchInput]);
 
-  const getData = () => {
-    search(searchInput, 10).then((data) => {
-      if (!data) {
-        setSearchList([]);
+  const debounceInput = useCallback(
+    debounce((searchInput) => {
+      if (!searchInput || searchInput.trim() === "") {
         return;
       }
-      setSearchList(data);
+      getData(searchInput);
+    }, 1000),
+    []
+  );
+
+  const getData = (input) => {
+    getAll().then((listBooks) => {
+      search(input, 10).then((data) => {
+        if (!data) {
+          setSearchList([]);
+          return;
+        }
+        for (let i = 0; i < listBooks.length; i++) {
+          const id = listBooks[i].id;
+          const book = data.find((e) => e.id === id);
+          if (!book) {
+            continue;
+          }
+          const index = data.map((e) => e.id).indexOf(id);
+          data[index]["shelf"] = listBooks[i]["shelf"];
+        }
+        setSearchList(data);
+      });
     });
   };
   return (
@@ -42,7 +61,7 @@ export default function Search() {
           />
         </div>
       </div>
-      {searchInput && searchInput.trim() != "" ? (
+      {searchInput && searchInput.trim() !== "" ? (
         <div className="search-books-results">
           <ol className="books-grid">
             {searchList && searchList.length > 0
@@ -51,7 +70,7 @@ export default function Search() {
                     key={`current-${i}`}
                     e={e}
                     callback={() => {
-                      getData();
+                      getData(searchInput);
                     }}
                     listBooks={searchList}
                   />
